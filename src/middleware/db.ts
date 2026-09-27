@@ -1,15 +1,22 @@
 import { MiddlewareHandler } from "hono";
 import { createDb } from "../db/client";
-import { Bindings } from "../types/bindings";
+import { AppContext } from "../types/context";
 
 /**
- * Middleware that creates a Drizzle DB client from the Neon connection string
- * and attaches it to the Hono context as `c.get("db")`.
+ * DB middleware — creates a Drizzle client per request and injects it into context.
+ *
+ * ─────────────────────────────────────────────────────────
+ * Migrating to Node.js?
+ * ─────────────────────────────────────────────────────────
+ * Change:
+ *   const db = createDb(c.env.DATABASE_URL);
+ * To:
+ *   const db = createDb(process.env.DATABASE_URL!);
+ *
+ * Everything downstream (repositories, services) stays unchanged.
+ * ─────────────────────────────────────────────────────────
  */
-export const dbMiddleware: MiddlewareHandler<{
-  Bindings: Bindings;
-  Variables: { db: ReturnType<typeof createDb> };
-}> = async (c, next) => {
+export const dbMiddleware: MiddlewareHandler<AppContext> = async (c, next) => {
   const db = createDb(c.env.DATABASE_URL);
   c.set("db", db);
   await next();

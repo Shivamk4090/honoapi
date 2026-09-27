@@ -4,8 +4,20 @@ import * as schema from "./schema";
 
 /**
  * Create a Drizzle ORM client connected to Neon via HTTP.
- * Call this inside each request handler, passing the DATABASE_URL
- * from the Worker's env bindings.
+ *
+ * ─────────────────────────────────────────────────────────
+ * Migrating to Node.js / Bun / Docker?
+ * ─────────────────────────────────────────────────────────
+ * Swap the driver:
+ *
+ *   import { drizzle } from "drizzle-orm/node-postgres";
+ *   import { Pool } from "pg";
+ *
+ *   const pool = new Pool({ connectionString: DATABASE_URL });
+ *   return drizzle(pool, { schema });
+ *
+ * Repositories and services stay completely unchanged.
+ * ─────────────────────────────────────────────────────────
  */
 export function createDb(databaseUrl: string) {
   const sql = neon(databaseUrl);
