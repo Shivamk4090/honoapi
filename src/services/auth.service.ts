@@ -2,6 +2,7 @@ import { Db } from "../db/client";
 import { usersRepository } from "../repositories/users.repository";
 import { hashPassword, verifyPassword } from "../lib/crypto";
 import { ConflictError, UnauthorizedError, ValidationError } from "../lib/errors";
+import { subscriptionService } from "./subscription.service";
 
 /**
  * Auth service — pure business logic.
@@ -27,11 +28,16 @@ export const authService = {
 
     const passwordHash = await hashPassword(data.password);
 
-    return usersRepository.create(db, {
+    const user = await usersRepository.create(db, {
       name: data.name.trim(),
       email: data.email.trim().toLowerCase(),
       passwordHash,
     });
+
+    // Auto-assign FREE plan on registration
+    await subscriptionService.assignFreePlan(db, user.id);
+
+    return user;
   },
 
   login: async (db: Db, data: { email: string; password: string }) => {

@@ -1,14 +1,28 @@
 import { ErrorHandler } from "hono";
-import { AppError } from "../lib/errors";
+import { AppError, UsageLimitError } from "../lib/errors";
 
 /**
- * Global error handler — catches AppError subclasses from services
- * and maps them to HTTP responses. Unknown errors become 500.
- *
- * Keeps controllers clean: no try/catch needed, just throw domain errors.
+ * Global error handler — maps domain errors to HTTP responses.
+ * UsageLimitError gets a structured body so frontends can show upgrade prompts.
  */
 export const errorHandler: ErrorHandler = (err, c) => {
   const requestId = c.get("requestId" as never) as string | undefined;
+
+  if (err instanceof UsageLimitError) {
+    return c.json(
+      {
+        error: {
+          code: "USAGE_LIMIT_REACHED",
+          message: err.message,
+          featureCode: err.featureCode,
+          limit: err.limit,
+          used: err.used,
+        },
+        ...(requestId && { requestId }),
+      },
+      429
+    );
+  }
 
   if (err instanceof AppError) {
     return c.json(

@@ -15,6 +15,13 @@
       "when": 1790503847299,
       "tag": "0001_lazy_banshee",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790533627029,
+      "tag": "0002_redundant_drax",
+      "breakpoints": true
     }
   ]
 }

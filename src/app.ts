@@ -10,19 +10,15 @@ import { errorHandler } from "./middleware/error";
 import authRouter from "./routes/auth";
 import usersRouter from "./routes/users";
 import postsRouter from "./routes/posts";
+import plansRouter from "./routes/plans";
+import subscriptionsRouter from "./routes/subscriptions";
 
 /**
  * Hono application — runtime-agnostic.
+ * Zero Cloudflare-specific code here.
  *
- * This file has NO Cloudflare-specific code.
- * It can be imported by any runtime adapter:
- *
- *   Cloudflare Worker (index.ts):
- *     export default app;
- *
- *   Node.js / Bun (server.ts):
- *     import { serve } from "@hono/node-server";
- *     serve({ fetch: app.fetch, port: 3000 });
+ * Cloudflare entry:  src/index.ts  → export default app
+ * Node.js entry:     src/server.ts → serve({ fetch: app.fetch, port: 3000 })
  */
 const app = new Hono<AppContext>();
 
@@ -45,12 +41,21 @@ app.get("/", (c) =>
 
 app.get("/health", (c) => c.json({ status: "ok" }));
 
+// Auth (register/login — public)
 app.route("/auth", authRouter);
 
-// ── Protected API routes ──────────────────────────────────────────────────────
+// Plans (pricing page — public)
+app.route("/plans", plansRouter);
+
+// ── Protected routes (JWT required) ──────────────────────────────────────────
 app.use("/api/*", authMiddleware);
+
+// User & post CRUD
 app.route("/api/users", usersRouter);
 app.route("/api/posts", postsRouter);
+
+// Subscription management
+app.route("/api/subscriptions", subscriptionsRouter);
 
 // ── 404 + global error handler ───────────────────────────────────────────────
 app.notFound((c) =>
