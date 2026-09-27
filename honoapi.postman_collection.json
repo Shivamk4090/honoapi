@@ -9,7 +9,7 @@
       "key": "baseUrl",
       "value": "https://honoapi.morogroup.workers.dev",
       "type": "string",
-      "description": "Base URL of the API — change this for local (http://localhost:8787) or production"
+      "description": "Base URL — change to http://localhost:8787 for local dev"
     },
     {
       "key": "token",
@@ -37,28 +37,17 @@
           "request": {
             "auth": { "type": "noauth" },
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/",
-              "host": ["{{baseUrl}}"],
-              "path": [""]
-            },
+            "url": { "raw": "{{baseUrl}}/", "host": ["{{baseUrl}}"], "path": [""] },
             "description": "Returns API status and timestamp"
-          },
-          "response": []
+          }
         },
         {
           "name": "Health Check",
           "request": {
             "auth": { "type": "noauth" },
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/health",
-              "host": ["{{baseUrl}}"],
-              "path": ["health"]
-            },
-            "description": "Simple health ping"
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+          }
         }
       ]
     },
@@ -75,9 +64,8 @@
                   "const res = pm.response.json();",
                   "if (res.token) {",
                   "    pm.collectionVariables.set('token', res.token);",
-                  "    console.log('✅ Token saved:', res.token);",
-                  "} else {",
-                  "    console.log('❌ No token in response');",
+                  "    console.log('✅ Token saved. User ID:', res.user?.id);",
+                  "    console.log('ℹ️  FREE plan auto-assigned on register');",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -87,27 +75,15 @@
           "request": {
             "auth": { "type": "noauth" },
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}",
-              "options": {
-                "raw": { "language": "json" }
-              }
+              "options": { "raw": { "language": "json" } }
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "register"]
-            },
-            "description": "Register a new user.\n\n✅ Token is **automatically saved** to `{{token}}` variable after success."
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] },
+            "description": "Register a new user.\n\n✅ Token auto-saved to `{{token}}`.\n📦 FREE plan is automatically assigned."
+          }
         },
         {
           "name": "Login",
@@ -119,9 +95,7 @@
                   "const res = pm.response.json();",
                   "if (res.token) {",
                   "    pm.collectionVariables.set('token', res.token);",
-                  "    console.log('✅ Token saved:', res.token);",
-                  "} else {",
-                  "    console.log('❌ Login failed:', res.error);",
+                  "    console.log('✅ Token saved. User ID:', res.user?.id);",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -131,40 +105,67 @@
           "request": {
             "auth": { "type": "noauth" },
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}",
-              "options": {
-                "raw": { "language": "json" }
-              }
+              "options": { "raw": { "language": "json" } }
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "login"]
-            },
-            "description": "Login with email & password.\n\n✅ Token is **automatically saved** to `{{token}}` variable after success."
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "description": "Login — token auto-saved to `{{token}}`."
+          }
         },
         {
           "name": "Get Me",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/auth/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "me"]
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] },
+            "description": "Returns current user info from JWT payload.\n🔒 Requires token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "💳 Plans & Subscriptions",
+      "item": [
+        {
+          "name": "List Plans (Public)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/plans", "host": ["{{baseUrl}}"], "path": ["plans"] },
+            "description": "🌐 Public — no auth required.\nReturns all active plans for your pricing page.\n\nPlans: FREE / PRO / PREMIUM\nPrices in cents (999 = $9.99)"
+          }
+        },
+        {
+          "name": "My Subscription",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/subscriptions/me", "host": ["{{baseUrl}}"], "path": ["api", "subscriptions", "me"] },
+            "description": "🔒 Requires token.\nReturns your current plan, billing period and status."
+          }
+        },
+        {
+          "name": "My Usage (Current Period)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/subscriptions/usage", "host": ["{{baseUrl}}"], "path": ["api", "subscriptions", "usage"] },
+            "description": "🔒 Requires token.\nReturns current month's feature usage counts.\nUse this to build usage dashboards / progress bars."
+          }
+        },
+        {
+          "name": "Change Plan",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planCode\": \"PRO\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "description": "Returns the currently authenticated user's info from JWT payload.\n\n🔒 Requires Bearer token."
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/api/subscriptions/change-plan", "host": ["{{baseUrl}}"], "path": ["api", "subscriptions", "change-plan"] },
+            "description": "🔒 Requires token.\nUpgrade or downgrade plan.\n\nValid values: FREE | PRO | PREMIUM\n\nℹ️  In production this is triggered by Stripe/Paddle webhook after payment.\nEntitlement cache is invalidated immediately on change."
+          }
         }
       ]
     },
@@ -175,79 +176,47 @@
           "name": "List All Users",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/users",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users"]
-            },
-            "description": "Returns list of all users (no passwordHash).\n\n🔒 Requires Bearer token."
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/api/users", "host": ["{{baseUrl}}"], "path": ["api", "users"] },
+            "description": "🔒 Requires token. Returns all users (no passwordHash)."
+          }
         },
         {
           "name": "Get My Profile",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/users/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "me"]
-            },
-            "description": "Returns your own profile using the JWT token.\n\n🔒 Requires Bearer token."
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/api/users/me", "host": ["{{baseUrl}}"], "path": ["api", "users", "me"] },
+            "description": "🔒 Requires token. Returns your own profile via JWT."
+          }
         },
         {
           "name": "Get User by ID",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/users/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "1"]
-            },
-            "description": "Returns a single user by ID.\n\n🔒 Requires Bearer token."
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/api/users/1", "host": ["{{baseUrl}}"], "path": ["api", "users", "1"] },
+            "description": "🔒 Requires token."
+          }
         },
         {
           "name": "Update User (own only)",
           "request": {
             "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Updated Name\",\n  \"email\": \"updated@example.com\"\n}",
-              "options": {
-                "raw": { "language": "json" }
-              }
+              "raw": "{\n  \"name\": \"Updated Name\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/users/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "1"]
-            },
-            "description": "Update a user's name or email.\n\n🔒 Requires Bearer token.\n⚠️ You can **only update your own account** — returns 403 if you try another user's ID."
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/api/users/1", "host": ["{{baseUrl}}"], "path": ["api", "users", "1"] },
+            "description": "🔒 Requires token.\n⚠️ 403 if you try another user's ID."
+          }
         },
         {
           "name": "Delete User (own only)",
           "request": {
             "method": "DELETE",
-            "url": {
-              "raw": "{{baseUrl}}/api/users/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "1"]
-            },
-            "description": "Delete a user account.\n\n🔒 Requires Bearer token.\n⚠️ You can **only delete your own account** — returns 403 if you try another user's ID."
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/api/users/1", "host": ["{{baseUrl}}"], "path": ["api", "users", "1"] },
+            "description": "🔒 Requires token.\n⚠️ 403 if you try another user's ID."
+          }
         }
       ]
     },
@@ -258,92 +227,108 @@
           "name": "List All Posts",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/posts",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "posts"]
-            },
-            "description": "Returns all posts.\n\n🔒 Requires Bearer token."
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/api/posts", "host": ["{{baseUrl}}"], "path": ["api", "posts"] },
+            "description": "🔒 Requires token."
+          }
         },
         {
           "name": "Get Post by ID",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/posts/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "posts", "1"]
-            },
-            "description": "Returns a single post by ID.\n\n🔒 Requires Bearer token."
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/api/posts/1", "host": ["{{baseUrl}}"], "path": ["api", "posts", "1"] },
+            "description": "🔒 Requires token."
+          }
         },
         {
           "name": "Create Post",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"title\": \"My First Post\",\n  \"content\": \"Hello from honoapi!\",\n  \"userId\": 1\n}",
-              "options": {
-                "raw": { "language": "json" }
-              }
+              "options": { "raw": { "language": "json" } }
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/posts",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "posts"]
-            },
-            "description": "Create a new post.\n\n🔒 Requires Bearer token."
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/api/posts", "host": ["{{baseUrl}}"], "path": ["api", "posts"] },
+            "description": "🔒 Requires token."
+          }
         },
         {
           "name": "Update Post",
           "request": {
             "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Updated Title\",\n  \"content\": \"Updated content here.\"\n}",
-              "options": {
-                "raw": { "language": "json" }
-              }
+              "raw": "{\n  \"title\": \"Updated Title\",\n  \"content\": \"Updated content.\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/posts/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "posts", "1"]
-            },
-            "description": "Update a post's title or content.\n\n🔒 Requires Bearer token."
-          },
-          "response": []
+            "url": { "raw": "{{baseUrl}}/api/posts/1", "host": ["{{baseUrl}}"], "path": ["api", "posts", "1"] },
+            "description": "🔒 Requires token."
+          }
         },
         {
           "name": "Delete Post",
           "request": {
             "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/posts/1", "host": ["{{baseUrl}}"], "path": ["api", "posts", "1"] },
+            "description": "🔒 Requires token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🧪 Entitlement Demo",
+      "description": "These requests demonstrate the checkEntitlement middleware.\nAdd similar routes to your own SaaS features.",
+      "item": [
+        {
+          "name": "Check Access — api_requests (FREE: 100/mo)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (pm.response.code === 429) {",
+                  "    console.log('🚫 LIMIT REACHED:', res.error);",
+                  "    console.log('Used:', res.error?.used, '/', res.error?.limit);",
+                  "} else if (pm.response.code === 403) {",
+                  "    console.log('🚫 PLAN FEATURE NOT INCLUDED:', res.error);",
+                  "} else {",
+                  "    console.log('✅ Access granted');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/api/posts/1",
+              "raw": "{{baseUrl}}/api/subscriptions/usage",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "posts", "1"]
+              "path": ["api", "subscriptions", "usage"]
             },
-            "description": "Delete a post by ID.\n\n🔒 Requires Bearer token."
-          },
-          "response": []
+            "description": "View current usage vs your plan limits.\n\nExpected responses:\n✅ 200 — access granted, shows usage counts\n🚫 429 — USAGE_LIMIT_REACHED (with limit/used in body)\n🚫 403 — feature not on your plan\n\nExample 429 response:\n```json\n{\n  \"error\": {\n    \"code\": \"USAGE_LIMIT_REACHED\",\n    \"featureCode\": \"api_requests\",\n    \"limit\": 100,\n    \"used\": 100\n  }\n}\n```"
+          }
+        },
+        {
+          "name": "Upgrade to PRO then Check Again",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planCode\": \"PRO\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions/change-plan",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscriptions", "change-plan"]
+            },
+            "description": "Upgrade to PRO to unlock higher limits.\nEntitlement cache is invalidated automatically."
+          }
         }
       ]
     }
