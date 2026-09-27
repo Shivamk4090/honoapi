@@ -6,12 +6,21 @@ import { Bindings } from "../types/bindings";
 
 type Variables = { db: ReturnType<typeof createDb> };
 
+// Safe user fields to return (never expose passwordHash)
+const safeUserFields = {
+  id: users.id,
+  name: users.name,
+  email: users.email,
+  createdAt: users.createdAt,
+  updatedAt: users.updatedAt,
+};
+
 const usersRouter = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 // GET /users — list all users
 usersRouter.get("/", async (c) => {
   const db = c.get("db");
-  const allUsers = await db.select().from(users);
+  const allUsers = await db.select(safeUserFields).from(users);
   return c.json({ data: allUsers });
 });
 
@@ -20,7 +29,7 @@ usersRouter.get("/:id", async (c) => {
   const db = c.get("db");
   const id = Number(c.req.param("id"));
 
-  const [user] = await db.select().from(users).where(eq(users.id, id));
+  const [user] = await db.select(safeUserFields).from(users).where(eq(users.id, id));
   if (!user) return c.json({ error: "User not found" }, 404);
 
   return c.json({ data: user });

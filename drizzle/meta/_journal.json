@@ -8,6 +8,13 @@
       "when": 1790502159809,
       "tag": "0000_gifted_black_bird",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790503847299,
+      "tag": "0001_lazy_banshee",
+      "breakpoints": true
     }
   ]
 }

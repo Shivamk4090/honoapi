@@ -5,10 +5,15 @@ import { Bindings } from "./types/bindings";
 import { createDb } from "./db/client";
 import { corsMiddleware } from "./middleware/cors";
 import { dbMiddleware } from "./middleware/db";
+import { authMiddleware, JwtPayload } from "./middleware/auth";
+import authRouter from "./routes/auth";
 import usersRouter from "./routes/users";
 import postsRouter from "./routes/posts";
 
-type Variables = { db: ReturnType<typeof createDb> };
+type Variables = {
+  db: ReturnType<typeof createDb>;
+  jwtPayload: JwtPayload;
+};
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -18,7 +23,7 @@ app.use("*", prettyJSON());
 app.use("*", corsMiddleware);
 app.use("*", dbMiddleware);
 
-// ── Health check ─────────────────────────────────────────────────────────────
+// ── Health check (public) ─────────────────────────────────────────────────────
 app.get("/", (c) =>
   c.json({
     status: "ok",
@@ -29,7 +34,12 @@ app.get("/", (c) =>
 
 app.get("/health", (c) => c.json({ status: "ok" }));
 
-// ── API routes ───────────────────────────────────────────────────────────────
+// ── Public auth routes (register & login) ─────────────────────────────────────
+app.route("/auth", authRouter);
+
+// ── Protected API routes ──────────────────────────────────────────────────────
+// authMiddleware must be registered BEFORE the route handlers
+app.use("/api/*", authMiddleware);
 app.route("/api/users", usersRouter);
 app.route("/api/posts", postsRouter);
 

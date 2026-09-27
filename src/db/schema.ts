@@ -1,13 +1,14 @@
 import { pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 /**
- * Example "users" table — extend or replace with your own schema.
+ * "users" table — includes password_hash for JWT auth.
  * Run `npm run db:generate` to generate migrations after editing.
  */
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull().unique(),
+  passwordHash: varchar("password_hash", { length: 512 }).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
