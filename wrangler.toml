@@ -3,8 +3,13 @@ main = "src/index.ts"
 compatibility_date = "2025-03-10"
 compatibility_flags = ["nodejs_compat"]
 
+[observability.logs]
+enabled = true
+invocation_logs = true
+
 [vars]
 # Add non-secret env vars here
 
 # Secrets (set via `wrangler secret put`):
 # DATABASE_URL — your Neon connection string
+# JWT_SECRET   — your JWT signing secret
